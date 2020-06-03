@@ -8,8 +8,9 @@ A class to discover, connect, receive notifications and write data to peripheral
 import UIKit
 import CoreBluetooth
 import os
+import AVFoundation
 
-class CentralViewController: UIViewController {
+class CentralViewController: UIViewController, AVAudioPlayerDelegate {
     // UIViewController overrides, properties specific to this class, private helper methods, etc.
 
     @IBOutlet var textView: UITextView!
@@ -20,6 +21,7 @@ class CentralViewController: UIViewController {
     var transferCharacteristic: CBCharacteristic?
     var writeIterationsComplete = 0
     var connectionIterationsComplete = 0
+    var audioPlayer: AVAudioPlayer!
     
     let defaultIterations = 5     // change this value based on test usecase
     
@@ -30,6 +32,27 @@ class CentralViewController: UIViewController {
     override func viewDidLoad() {
         centralManager = CBCentralManager(delegate: self, queue: nil, options: [CBCentralManagerOptionShowPowerAlertKey: true])
         super.viewDidLoad()
+        
+        //再生するaudioファイルのパスを取得
+        let audioPath = Bundle.main.path(forResource: "mitsu", ofType: "mp3")!
+        let audioURL = URL(fileURLWithPath: audioPath)
+        
+        //audioを再生するプレイヤーを作成
+        var audioError:NSError?
+        do {
+            audioPlayer = try AVAudioPlayer(contentsOf: audioURL)
+        } catch let error as NSError {
+            audioError = error
+            audioPlayer = nil
+        }
+        
+        //エラーが起きたとき
+        if let error = audioError {
+            print("Error \(error.localizedDescription)")
+        }
+        
+        audioPlayer.delegate = self
+        audioPlayer.prepareToPlay()
 
     }
 	
@@ -57,6 +80,7 @@ class CentralViewController: UIViewController {
         
         if let connectedPeripheral = connectedPeripherals.last {
             os_log("Connecting to peripheral %@", connectedPeripheral)
+            audioPlayer.play()
 			self.discoveredPeripheral = connectedPeripheral
             centralManager.connect(connectedPeripheral, options: nil)
         } else {
