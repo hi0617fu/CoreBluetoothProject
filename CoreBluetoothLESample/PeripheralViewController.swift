@@ -19,6 +19,7 @@ class PeripheralViewController: UIViewController {
     var transferCharacteristic: CBMutableCharacteristic?
     var connectedCentral: CBCentral?
     var dataToSend = Data()
+    var imageToSend = UIImage()
     var sendDataIndex: Int = 0
     
     // MARK: - View Lifecycle
@@ -127,6 +128,10 @@ class PeripheralViewController: UIViewController {
             }
         }
     }
+    
+    private func sendImage() {
+        
+    }
 
     private func setupPeripheral() {
         
@@ -219,6 +224,7 @@ extension PeripheralViewController: CBPeripheralManagerDelegate {
         
         // Get the data
         dataToSend = textView.text.data(using: .utf8)!
+        imageToSend = UIImage(named: "turtlerock.jpg")!
         
         // Reset the index
         sendDataIndex = 0
@@ -228,6 +234,7 @@ extension PeripheralViewController: CBPeripheralManagerDelegate {
         
         // Start sending
         sendData()
+        sendImage()
     }
     
     /*

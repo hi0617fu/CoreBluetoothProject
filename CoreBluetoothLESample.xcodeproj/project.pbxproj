@@ -15,6 +15,7 @@
 		012C307C226FD28C00BADEF9 /* PeripheralViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 012C307B226FD28C00BADEF9 /* PeripheralViewController.swift */; };
 		012C307E226FD59500BADEF9 /* TransferService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 012C307D226FD59500BADEF9 /* TransferService.swift */; };
 		5CDDE1F12480C54A0040452F /* mitsu.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 5CDDE1F02480C5490040452F /* mitsu.mp3 */; };
+		5CDDE1F32488C7460040452F /* turtlerock.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 5CDDE1F22488C7460040452F /* turtlerock.jpg */; };
 		A9A7C756227E1D6200F2CC59 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = A9A7C755227E1D6200F2CC59 /* README.md */; };
 /* End PBXBuildFile section */
 
@@ -30,6 +31,7 @@
 		012C307D226FD59500BADEF9 /* TransferService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferService.swift; sourceTree = "<group>"; };
 		53F76A1B5D2A119C156B3CA9 /* LICENSE.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = LICENSE.txt; sourceTree = "<group>"; };
 		5CDDE1F02480C5490040452F /* mitsu.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = mitsu.mp3; path = ../../mitsu.mp3; sourceTree = "<group>"; };
+		5CDDE1F22488C7460040452F /* turtlerock.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = turtlerock.jpg; path = ../../CreatingAndCombiningViews/Resources/turtlerock.jpg; sourceTree = "<group>"; };
 		940DB595832554E780C12D56 /* SampleCode.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = SampleCode.xcconfig; path = Configuration/SampleCode.xcconfig; sourceTree = "<group>"; };
 		A9A7C755227E1D6200F2CC59 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		A9FCEFA72293634C008CC0CF /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
@@ -75,6 +77,7 @@
 				012C307B226FD28C00BADEF9 /* PeripheralViewController.swift */,
 				012C306B226FD13B00BADEF9 /* Main.storyboard */,
 				5CDDE1F02480C5490040452F /* mitsu.mp3 */,
+				5CDDE1F22488C7460040452F /* turtlerock.jpg */,
 				012C306E226FD13B00BADEF9 /* Assets.xcassets */,
 				012C3070226FD13B00BADEF9 /* LaunchScreen.storyboard */,
 				012C3073226FD13B00BADEF9 /* Info.plist */,
@@ -167,6 +170,7 @@
 			files = (
 				012C3072226FD13B00BADEF9 /* LaunchScreen.storyboard in Resources */,
 				012C306F226FD13B00BADEF9 /* Assets.xcassets in Resources */,
+				5CDDE1F32488C7460040452F /* turtlerock.jpg in Resources */,
 				A9A7C756227E1D6200F2CC59 /* README.md in Resources */,
 				012C306D226FD13B00BADEF9 /* Main.storyboard in Resources */,
 				5CDDE1F12480C54A0040452F /* mitsu.mp3 in Resources */,
