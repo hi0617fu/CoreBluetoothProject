@@ -143,6 +143,10 @@
                                     <action selector="switchChanged:" destination="fAL-1c-sOi" eventType="valueChanged" id="UjN-ZU-Wsj"/>
                                 </connections>
                             </switch>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="turtlerock" highlightedImage="turtlerock" translatesAutoresizingMaskIntoConstraints="NO" id="jvh-Rc-8Vf">
+                                <rect key="frame" x="67" y="140" width="240" height="128"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            </imageView>
                         </subviews>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <constraints>
@@ -165,4 +169,7 @@
             <point key="canvasLocation" x="1052" y="341.37931034482762"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="turtlerock" width="125" height="125"/>
+    </resources>
 </document>

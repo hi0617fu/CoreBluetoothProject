@@ -14,11 +14,13 @@ class CentralViewController: UIViewController, AVAudioPlayerDelegate {
     // UIViewController overrides, properties specific to this class, private helper methods, etc.
 
     @IBOutlet var textView: UITextView!
+    @IBOutlet var imageView: UIImageView!
 
     var centralManager: CBCentralManager!
 
     var discoveredPeripheral: CBPeripheral?
     var transferCharacteristic: CBCharacteristic?
+    var transferCharacteristic2: CBCharacteristic?
     var writeIterationsComplete = 0
     var connectionIterationsComplete = 0
     var audioPlayer: AVAudioPlayer!
@@ -312,6 +314,7 @@ extension CentralViewController: CBPeripheralDelegate {
         guard let peripheralServices = peripheral.services else { return }
         for service in peripheralServices {
             peripheral.discoverCharacteristics([TransferService.characteristicUUID], for: service)
+            peripheral.discoverCharacteristics([TransferService.characteristic2UUID], for: service)
         }
     }
     
@@ -329,7 +332,7 @@ extension CentralViewController: CBPeripheralDelegate {
         
         // Again, we loop through the array, just in case and check if it's the right one
         guard let serviceCharacteristics = service.characteristics else { return }
-        for characteristic in serviceCharacteristics where characteristic.uuid == TransferService.characteristicUUID {
+        for characteristic in serviceCharacteristics where characteristic.uuid == TransferService.characteristicUUID  {
             // If it is, subscribe to it
             transferCharacteristic = characteristic
             peripheral.setNotifyValue(true, for: characteristic)
@@ -361,6 +364,7 @@ extension CentralViewController: CBPeripheralDelegate {
             // we don't know which thread this method will be called back on.
             DispatchQueue.main.async() {
                 self.textView.text = String(data: self.data, encoding: .utf8)
+                self.imageView
             }
             
             // Write test data

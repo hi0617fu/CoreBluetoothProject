@@ -13,10 +13,12 @@ class PeripheralViewController: UIViewController {
 
     @IBOutlet var textView: UITextView!
     @IBOutlet var advertisingSwitch: UISwitch!
+    @IBOutlet var imageView: UIImageView!
     
     var peripheralManager: CBPeripheralManager!
 
     var transferCharacteristic: CBMutableCharacteristic?
+    var transferCharacteristic2: CBMutableCharacteristic?
     var connectedCentral: CBCentral?
     var dataToSend = Data()
     var imageToSend = UIImage()
@@ -130,7 +132,10 @@ class PeripheralViewController: UIViewController {
     }
     
     private func sendImage() {
-        
+        guard let transferCharacteristic2 = transferCharacteristic2 else {
+            return
+        }
+        peripheralManager.updateValue(pngData, for: transferCharacteristic2, onSubscribedCentrals: nil)
     }
 
     private func setupPeripheral() {
@@ -154,9 +159,37 @@ class PeripheralViewController: UIViewController {
         
         // Save the characteristic for later.
         self.transferCharacteristic = transferCharacteristic
+        
+        let transferCharacteristic2 = CBMutableCharacteristic(type: TransferService.characteristic2UUID,
+                                                         properties: [.notify, .writeWithoutResponse],
+                                                         value: nil,
+                                                         permissions: [.readable, .writeable])
+        
+        // Create a service from the characteristic.
+        let transferService2 = CBMutableService(type: TransferService.serviceUUID, primary: true)
+        
+        // Add the characteristic to the service.
+        transferService2.characteristics = [transferCharacteristic2]
+        
+        // And add it to the peripheral manager.
+        peripheralManager.add(transferService2)
+        
+        // Save the characteristic for later.
+        self.transferCharacteristic2 = transferCharacteristic2
 
     }
 }
+extension UIImage {
+    public func toPNGData() -> Data {
+        guard let data = self.pngData() else {
+            return Data()
+        }
+        return data
+    }
+}
+
+let image = #imageLiteral(resourceName: "turtlerock.png")
+let pngData = image.toPNGData()
 
 extension PeripheralViewController: CBPeripheralManagerDelegate {
     // implementations of the CBPeripheralManagerDelegate methods
@@ -224,7 +257,7 @@ extension PeripheralViewController: CBPeripheralManagerDelegate {
         
         // Get the data
         dataToSend = textView.text.data(using: .utf8)!
-        imageToSend = UIImage(named: "turtlerock.jpg")!
+        imageToSend = UIImage(named: "turtlerock")!
         
         // Reset the index
         sendDataIndex = 0
