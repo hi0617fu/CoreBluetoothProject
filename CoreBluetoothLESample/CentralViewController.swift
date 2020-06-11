@@ -28,6 +28,10 @@ class CentralViewController: UIViewController, AVAudioPlayerDelegate {
     let defaultIterations = 5     // change this value based on test usecase
     
     var data = Data()
+    
+    func tempFunc(callback: (String) -> Void) {
+        callback("callback!!!!")
+    }
 
     // MARK: - view lifecycle
     
@@ -110,7 +114,15 @@ class CentralViewController: UIViewController, AVAudioPlayerDelegate {
                 }
             }
         }
-        
+
+        for service in (discoveredPeripheral.services ?? [] as [CBService]) {
+            for characteristic in (service.characteristics ?? [] as [CBCharacteristic]) {
+                if characteristic.uuid == TransferService.characteristic2UUID && characteristic.isNotifying {
+                    // It is notifying, so unsubscribe
+                    self.discoveredPeripheral?.setNotifyValue(false, for: characteristic)
+                }
+            }
+        }
         // If we've gotten this far, we're connected, but we're not subscribed, so we just disconnect
         centralManager.cancelPeripheralConnection(discoveredPeripheral)
     }
@@ -119,7 +131,6 @@ class CentralViewController: UIViewController, AVAudioPlayerDelegate {
      *  Write some test data to peripheral
      */
     private func writeData() {
-    
         guard let discoveredPeripheral = discoveredPeripheral,
                 let transferCharacteristic = transferCharacteristic
             else { return }
@@ -148,7 +159,41 @@ class CentralViewController: UIViewController, AVAudioPlayerDelegate {
             discoveredPeripheral.setNotifyValue(false, for: transferCharacteristic)
         }
     }
+    private func writeDataForImage() {
+        guard let discoveredPeripheralimage = discoveredPeripheral,
+                let transferCharacteristic2 = transferCharacteristic2
+            else { return }
+        
+        while writeIterationsComplete < defaultIterations && discoveredPeripheralimage.canSendWriteWithoutResponse {
+        let imageData = discoveredPeripheralimage.maximumWriteValueLength(for: .withoutResponse)
+        var rawPacket = [UInt8]()
+        let bytesToCopy: size_t = min(imageData, data.count)
+        data.copyBytes(to: &rawPacket, count: bytesToCopy)
+        let packetData = Data(bytes: &rawPacket, count: bytesToCopy)
+        let stringFromData = String(data: packetData, encoding: .utf8)
+        os_log("Writing %d bytes for Image: %s", bytesToCopy, String(describing: stringFromData))
+              
+        discoveredPeripheralimage.writeValue(packetData, for: transferCharacteristic2, type: .withoutResponse)
+        writeIterationsComplete += 1
+                
+        }
+            
+        if writeIterationsComplete == defaultIterations {
+            // Cancel our subscription to the characteristic
+            discoveredPeripheralimage.setNotifyValue(false, for: transferCharacteristic2)
+        }
+    }
+}
     
+
+extension Data {
+    public func toImage() -> UIImage {
+        guard let image = UIImage(data: self) else {
+            print("データをイメージに変換できませんでした。")
+            return UIImage()
+        }
+        return image
+    }
 }
 
 extension CentralViewController: CBCentralManagerDelegate {
@@ -313,8 +358,7 @@ extension CentralViewController: CBPeripheralDelegate {
         // Loop through the newly filled peripheral.services array, just in case there's more than one.
         guard let peripheralServices = peripheral.services else { return }
         for service in peripheralServices {
-            peripheral.discoverCharacteristics([TransferService.characteristicUUID], for: service)
-            peripheral.discoverCharacteristics([TransferService.characteristic2UUID], for: service)
+            peripheral.discoverCharacteristics(nil, for: service)
         }
     }
     
@@ -336,6 +380,24 @@ extension CentralViewController: CBPeripheralDelegate {
             // If it is, subscribe to it
             transferCharacteristic = characteristic
             peripheral.setNotifyValue(true, for: characteristic)
+        }
+        
+        // Once this is complete, we just need to wait for the data to come in.
+    }
+    func peripheral2(_ peripheral2: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
+        // Deal with errors (if any).
+        if let error = error {
+            os_log("Error discovering characteristics2: %s", error.localizedDescription)
+            cleanup()
+            return
+        }
+        
+        // Again, we loop through the array, just in case and check if it's the right one
+        guard let serviceCharacteristics2 = service.characteristics else { return }
+        for characteristic2 in serviceCharacteristics2 where characteristic2.uuid == TransferService.characteristic2UUID  {
+            // If it is, subscribe to it
+            transferCharacteristic2 = characteristic2
+            peripheral2.setNotifyValue(true, for: characteristic2)
         }
         
         // Once this is complete, we just need to wait for the data to come in.
@@ -364,7 +426,6 @@ extension CentralViewController: CBPeripheralDelegate {
             // we don't know which thread this method will be called back on.
             DispatchQueue.main.async() {
                 self.textView.text = String(data: self.data, encoding: .utf8)
-                self.imageView
             }
             
             // Write test data
@@ -374,7 +435,36 @@ extension CentralViewController: CBPeripheralDelegate {
             data.append(characteristicData)
         }
     }
-
+    func peripheral2(_ peripheral2: CBPeripheral, didUpdateValueFor characteristic2: CBCharacteristic, error: Error?) {
+        // Deal with errors (if any)
+        if let error = error {
+            os_log("Error discovering characteristics2: %s", error.localizedDescription)
+            cleanup()
+            return
+        }
+        
+        guard let characteristic2Data = characteristic2.value,
+            let stringFromData = String(data: characteristic2Data, encoding: .utf8) else { return }
+        
+        os_log("Received %d bytes: %s", characteristic2Data.count, stringFromData)
+        
+        // Have we received the end-of-message token?
+        if stringFromData == "EOM" {
+            // End-of-message case: show the data.
+            // Dispatch the text view update to the main queue for updating the UI, because
+            // we don't know which thread this method will be called back on.
+            let new_image=characteristic2Data.toImage()
+            DispatchQueue.main.async() {
+                self.imageView.image = new_image
+            }
+            
+            // Write test data
+            writeDataForImage()
+        } else {
+            // Otherwise, just append the data to what we have previously received.
+            data.append(characteristic2Data)
+        }
+    }
     /*
      *  The peripheral letting us know whether our subscribe/unsubscribe happened or not
      */
@@ -397,6 +487,16 @@ extension CentralViewController: CBPeripheralDelegate {
             cleanup()
         }
         
+        guard characteristic.uuid == TransferService.characteristic2UUID else { return }
+        
+        if characteristic.isNotifying {
+            // Notification has started
+            os_log("Notification began on %@", characteristic)
+        } else {
+            // Notification has stopped, so disconnect from the peripheral
+            os_log("Notification stopped on %@. Disconnecting", characteristic)
+            cleanup()
+        }
     }
     
     /*
@@ -405,6 +505,7 @@ extension CentralViewController: CBPeripheralDelegate {
     func peripheralIsReady(toSendWriteWithoutResponse peripheral: CBPeripheral) {
         os_log("Peripheral is ready, send data")
         writeData()
+        writeDataForImage()
     }
     
 }

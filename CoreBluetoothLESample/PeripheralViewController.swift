@@ -21,6 +21,7 @@ class PeripheralViewController: UIViewController {
     var transferCharacteristic2: CBMutableCharacteristic?
     var connectedCentral: CBCentral?
     var dataToSend = Data()
+    var pngData = Data()
     var imageToSend = UIImage()
     var sendDataIndex: Int = 0
     
@@ -135,7 +136,10 @@ class PeripheralViewController: UIViewController {
         guard let transferCharacteristic2 = transferCharacteristic2 else {
             return
         }
+        let chunk2 = pngData
+        os_log("%d bytes from image", chunk2.count)
         peripheralManager.updateValue(pngData, for: transferCharacteristic2, onSubscribedCentrals: nil)
+        os_log("Sent Image")
     }
 
     private func setupPeripheral() {
@@ -187,9 +191,6 @@ extension UIImage {
         return data
     }
 }
-
-let image = #imageLiteral(resourceName: "turtlerock.png")
-let pngData = image.toPNGData()
 
 extension PeripheralViewController: CBPeripheralManagerDelegate {
     // implementations of the CBPeripheralManagerDelegate methods
@@ -258,6 +259,7 @@ extension PeripheralViewController: CBPeripheralManagerDelegate {
         // Get the data
         dataToSend = textView.text.data(using: .utf8)!
         imageToSend = UIImage(named: "turtlerock")!
+        pngData = imageToSend.toPNGData()
         
         // Reset the index
         sendDataIndex = 0
@@ -266,8 +268,9 @@ extension PeripheralViewController: CBPeripheralManagerDelegate {
         connectedCentral = central
         
         // Start sending
-        sendData()
         sendImage()
+        sendData()
+        
     }
     
     /*
